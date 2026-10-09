@@ -60,6 +60,34 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #0070d1;
         }
+        @media print {
+            header, .controls-bar, #adminPanel, .admin-col, footer, .no-print {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            .glass-card {
+                background: white !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+            table {
+                width: 100% !important;
+                color: black !important;
+            }
+            th, td {
+                border: 1px solid #ddd !important;
+                color: black !important;
+                padding: 6px !important;
+            }
+            thead {
+                background-color: #00439c !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
@@ -79,7 +107,7 @@
                             مركز البروفسير
                             <span class="text-xs bg-psLightBlue text-white px-2.5 py-0.5 rounded-full font-normal">PS5 Jailbreak</span>
                         </h1>
-                        <p class="text-xs text-blue-300">قائمة ألعاب PlayStation 5 المعدلة المعدلة بالكامل</p>
+                        <p class="text-xs text-blue-300">قائمة ألعاب PlayStation 5 المعدلة بالكامل</p>
                     </div>
                 </div>
 
@@ -97,8 +125,8 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
         
-        <!-- Controls Bar: Search, Stats, View Toggle -->
-        <div class="glass-card rounded-2xl p-4 sm:p-6 mb-8 shadow-2xl border border-slate-700/60">
+        <!-- Controls Bar: Search, Stats, View Toggle, Export -->
+        <div class="controls-bar glass-card rounded-2xl p-4 sm:p-6 mb-8 shadow-2xl border border-slate-700/60">
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                 
                 <!-- Search Box -->
@@ -108,23 +136,29 @@
                 </div>
 
                 <!-- Quick Stats Badge & Layout Switches -->
-                <div class="flex items-center justify-between md:justify-end w-full md:w-auto gap-4">
+                <div class="flex flex-wrap items-center justify-between md:justify-end w-full md:w-auto gap-3">
                     
                     <!-- Stats Card -->
-                    <div class="flex items-center gap-3 bg-psDark/90 px-4 py-2.5 rounded-xl border border-blue-800/60 shadow-md">
-                        <div class="w-10 h-10 rounded-lg bg-psBlue/40 text-psAccent flex items-center justify-center text-lg">
+                    <div class="flex items-center gap-3 bg-psDark/90 px-4 py-2 rounded-xl border border-blue-800/60 shadow-md">
+                        <div class="w-9 h-9 rounded-lg bg-psBlue/40 text-psAccent flex items-center justify-center text-base">
                             <i class="fa-solid fa-gamepad"></i>
                         </div>
                         <div>
-                            <span class="text-xs text-slate-400 block">إجمالي الألعاب</span>
-                            <span id="totalGamesBadge" class="text-lg font-bold text-white">65</span>
+                            <span class="text-[10px] text-slate-400 block leading-none mb-1">إجمالي الألعاب</span>
+                            <span id="totalGamesBadge" class="text-base font-bold text-white leading-none">65</span>
                         </div>
                     </div>
 
                     <!-- Export Excel Button -->
-                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition shadow-md" title="تصدير القائمة إلى ملف Excel">
+                    <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition shadow-md" title="تصدير القائمة إلى ملف Excel">
                         <i class="fa-solid fa-file-excel text-base"></i>
                         <span class="hidden sm:inline">تصدير Excel</span>
+                    </button>
+
+                    <!-- Print / PDF Button -->
+                    <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 text-white px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 transition shadow-md" title="طباعة / حفظ PDF">
+                        <i class="fa-solid fa-print text-base"></i>
+                        <span class="hidden sm:inline">طباعة / PDF</span>
                     </button>
 
                     <!-- View Switcher (Grid / Table) -->
@@ -144,13 +178,18 @@
 
         <!-- Admin Management Panel (Hidden by default, Password Protected) -->
         <div id="adminPanel" class="hidden mb-8 glass-card rounded-2xl p-6 border-2 border-psAccent/50 shadow-2xl bg-gradient-to-b from-psDark to-slate-900">
-            <div class="flex items-center justify-between mb-6 pb-3 border-b border-slate-700">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 pb-3 border-b border-slate-700">
                 <h3 id="adminFormTitle" class="text-xl font-bold text-psAccent flex items-center gap-2">
                     <i class="fa-solid fa-plus-circle"></i> إضافة لعبة جديدة للقائمة
                 </h3>
-                <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1 rounded-full flex items-center gap-1">
-                    <i class="fa-solid fa-shield-halved"></i> لوحة التحكم مفعّلة (Kemo3020)
-                </span>
+                <div class="flex items-center gap-3">
+                    <button onclick="restoreDefaultGames()" class="bg-rose-900/50 hover:bg-rose-800 text-rose-200 border border-rose-700/60 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-rotate-left"></i> استعادة الـ 65 لعبة الأصلية
+                    </button>
+                    <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1.5 rounded-full flex items-center gap-1">
+                        <i class="fa-solid fa-shield-halved"></i> لوحة التحكم مفعّلة (Kemo3020)
+                    </span>
+                </div>
             </div>
 
             <form id="gameForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
@@ -256,7 +295,7 @@
     </footer>
 
     <script>
-        // Full List of 65 Games from Excel File
+        // Full Original Dataset of 65 Games from Excel File
         const initial65Games = [
             { id: 1, title: "A Plague Tale Innocence (PS5)", size: "40.2 GB", code: "PPSA02387-app0", price: "", notes: "" },
             { id: 2, title: "A Plague Tale Requiem (PS5)", size: "52.2 GB", code: "PPSA05366-app0", price: "", notes: "" },
@@ -325,37 +364,57 @@
             { id: 65, title: "REANIMAL (PS5)", size: "27.7 GB", code: "PPSA23372-app", price: "", notes: "" }
         ];
 
-        // State Variables
+        const STORAGE_KEY = 'prof_ps5_games_db';
+        const ADMIN_PASS = "Kemo3020";
+
         let gamesList = [];
         let isAdmin = false;
         let currentView = 'table';
         let sortDirection = true;
-        const ADMIN_PASS = "Kemo3020";
 
-        // Initialize App
+        // Initialize App & Read LocalStorage reliably
         window.onload = function () {
-            const savedGames = localStorage.getItem('professor_center_ps5_games');
+            loadGamesData();
+        };
+
+        function loadGamesData() {
+            const savedGames = localStorage.getItem(STORAGE_KEY);
             if (savedGames) {
                 try {
                     gamesList = JSON.parse(savedGames);
                 } catch (e) {
-                    gamesList = initial65Games;
+                    console.error("Error parsing saved games, reverting to defaults", e);
+                    gamesList = [...initial65Games];
+                    saveToLocalStorage();
                 }
             } else {
-                gamesList = initial65Games;
+                gamesList = [...initial65Games];
                 saveToLocalStorage();
             }
 
-            // Default Alphabetical Sort
-            gamesList.sort((a, b) => a.title.localeCompare(b.title));
+            sortAlphabetically();
             renderGames();
-        };
-
-        function saveToLocalStorage() {
-            localStorage.setItem('professor_center_ps5_games', JSON.stringify(gamesList));
         }
 
-        // Toggle Admin Mode with Password Security
+        function saveToLocalStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(gamesList));
+        }
+
+        function restoreDefaultGames() {
+            if (confirm("هل أنت تأكد من استعادة القائمة الأصلية للـ 65 لعبة؟ سيتم مسح أي ألعاب إضافية جديدة.")) {
+                gamesList = [...initial65Games];
+                saveToLocalStorage();
+                sortAlphabetically();
+                renderGames();
+                alert("تمت استعادة الألعاب الأصلية بنجاح!");
+            }
+        }
+
+        function sortAlphabetically() {
+            gamesList.sort((a, b) => a.title.localeCompare(b.title, 'en', { sensitivity: 'base' }));
+        }
+
+        // Toggle Admin Mode
         function handleAdminToggle() {
             if (!isAdmin) {
                 const passInput = prompt("رجاءً أدخل كلمة السر للدخول إلى لوحة التحكم:");
@@ -430,7 +489,7 @@
 
             dataToRender.forEach((game, index) => {
                 const defaultCover = "https://via.placeholder.com/300x400/1c2541/00d4ff?text=" + encodeURIComponent(game.title);
-                const gameImageSrc = game.image || defaultCover;
+                const gameImageSrc = (game.image && game.image.trim() !== '') ? game.image : defaultCover;
 
                 // Table Row
                 const tr = document.createElement('tr');
@@ -517,13 +576,15 @@
                 let valB = b[key] ? b[key].toString().toLowerCase() : '';
                 return sortDirection ? valA.localeCompare(valB, 'ar') : valB.localeCompare(valA, 'ar');
             });
+            saveToLocalStorage();
             renderGames();
         }
 
+        // Reliable Form Submit Handler
         function handleFormSubmit(e) {
             e.preventDefault();
 
-            const editId = document.getElementById('editGameId').value;
+            const editIdStr = document.getElementById('editGameId').value;
             const title = document.getElementById('gameTitle').value.trim();
             const size = document.getElementById('gameSize').value.trim();
             const code = document.getElementById('gameCode').value.trim();
@@ -531,10 +592,19 @@
             const image = document.getElementById('gameImage').value.trim();
             const notes = document.getElementById('gameNotes').value.trim();
 
-            if (editId) {
-                const index = gamesList.findIndex(g => g.id == editId);
+            if (editIdStr !== '') {
+                const editId = Number(editIdStr);
+                const index = gamesList.findIndex(g => Number(g.id) === editId);
                 if (index !== -1) {
-                    gamesList[index] = { ...gamesList[index], title, size, code, price, image, notes };
+                    gamesList[index] = { 
+                        ...gamesList[index], 
+                        title, 
+                        size, 
+                        code, 
+                        price: price || '', 
+                        image, 
+                        notes 
+                    };
                 }
             } else {
                 const newGame = {
@@ -542,41 +612,43 @@
                     title,
                     size,
                     code,
-                    price: price || '-',
+                    price: price || '',
                     image,
                     notes
                 };
                 gamesList.push(newGame);
             }
 
-            gamesList.sort((a, b) => a.title.localeCompare(b.title));
+            // Always Save to LocalStorage Immediately
+            sortAlphabetically();
             saveToLocalStorage();
             renderGames();
             resetForm();
+            alert("تم حفظ التعديلات بنجاح ولن تضيع عند التحديث!");
         }
 
         function editGame(id) {
-            const game = gamesList.find(g => g.id === id);
+            const game = gamesList.find(g => Number(g.id) === Number(id));
             if (!game) return;
 
             document.getElementById('editGameId').value = game.id;
             document.getElementById('gameTitle').value = game.title;
             document.getElementById('gameSize').value = game.size;
             document.getElementById('gameCode').value = game.code || '';
-            document.getElementById('gamePrice').value = game.price === '-' ? '' : game.price;
+            document.getElementById('gamePrice').value = game.price || '';
             document.getElementById('gameImage').value = game.image || '';
             document.getElementById('gameNotes').value = game.notes || '';
 
             document.getElementById('adminFormTitle').innerHTML = `<i class="fa-solid fa-pen-to-square text-amber-400"></i> تعديل لعبة (${game.title})`;
-            document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-rotate text-base"></i> تحديث اللعبة`;
+            document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-rotate text-base"></i> تحديث اللعبة والحفظ`;
 
             window.scrollTo({ top: 100, behavior: 'smooth' });
         }
 
         function deleteGame(id) {
-            const game = gamesList.find(g => g.id === id);
+            const game = gamesList.find(g => Number(g.id) === Number(id));
             if (confirm(`هل أنت تأكد من حذف لعبة (${game ? game.title : ''})؟`)) {
-                gamesList = gamesList.filter(g => g.id !== id);
+                gamesList = gamesList.filter(g => Number(g.id) !== Number(id));
                 saveToLocalStorage();
                 renderGames();
             }
